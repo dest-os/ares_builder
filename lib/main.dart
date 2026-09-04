@@ -34,90 +34,15 @@ class AresMainScreen extends StatefulWidget {
 
 class _AresMainScreenState extends State<AresMainScreen> {
   final TextEditingController _codeController = TextEditingController();
+  final TextEditingController _tokenController = TextEditingController();
+  final TextEditingController _repoController = TextEditingController();
 
-  void _showSettingsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Row(
-            children: [
-              Icon(Icons.settings, color: Color(0xFF00E5FF)),
-              SizedBox(width: 10),
-              Text(
-                'AYARLAR',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'GitHub Repository & Build Yapılandırması',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 15),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'GitHub Token',
-                  labelStyle: const TextStyle(color: Color(0xFF00E5FF)),
-                  filled: true,
-                  fillColor: Colors.black26,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF00E5FF)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Repo Adı',
-                  labelStyle: const TextStyle(color: Color(0xFF00E5FF)),
-                  filled: true,
-                  fillColor: Colors.black26,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF00E5FF)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('İptal', style: TextStyle(color: Colors.white54)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00E5FF),
-                foregroundColor: Colors.black,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ayarlar Kaydedildi!')),
-                );
-              },
-              child: const Text('Kaydet', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  bool _isSettingsOpen = false; // Ayarlar penceresinin açık olup olmadığını kontrol eder
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // Ekranın klavyeden dolayı sıkışmasını engeller
       backgroundColor: Colors.black,
       body: SafeArea(
         child: LayoutBuilder(
@@ -143,7 +68,7 @@ class _AresMainScreenState extends State<AresMainScreen> {
                   ),
                 ),
 
-                // 2. SAĞ ÜST AYARLAR BUTONU (Görseldeki Dişli/Çark İkonunun Üstü)
+                // 2. SAĞ ÜST AYARLAR BUTONU
                 Positioned(
                   right: w * 0.05,
                   top: h * 0.06,
@@ -153,13 +78,17 @@ class _AresMainScreenState extends State<AresMainScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(30),
-                      onTap: () => _showSettingsDialog(context),
+                      onTap: () {
+                        setState(() {
+                          _isSettingsOpen = true;
+                        });
+                      },
                       child: Container(),
                     ),
                   ),
                 ),
 
-                // 3. KOD YAPIŞTIRMA ALANI (Görseldeki siyah çerçevenin tam içi)
+                // 3. KOD YAPIŞTIRMA ALANI
                 Positioned(
                   left: w * 0.25,
                   width: w * 0.50,
@@ -225,6 +154,128 @@ class _AresMainScreenState extends State<AresMainScreen> {
                     ),
                   ),
                 ),
+
+                // 6. AYARLAR PENCERESİ (Özel Sabit Katman - Klavye Sorunsuz Çalışır)
+                if (_isSettingsOpen)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black87,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: Container(
+                            width: w * 0.65,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFF00E5FF), width: 1.5),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0xAA00E5FF),
+                                  blurRadius: 12,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Row(
+                                  children: [
+                                    Icon(Icons.settings, color: Color(0xFF00E5FF)),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'AYARLAR',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'GitHub Repository & Build Yapılandırması',
+                                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                                ),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  controller: _tokenController,
+                                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                                  decoration: InputDecoration(
+                                    labelText: 'GitHub Token',
+                                    labelStyle: const TextStyle(color: Color(0xFF00E5FF), fontSize: 12),
+                                    filled: true,
+                                    fillColor: Colors.black45,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: Color(0xFF00E5FF)),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                TextField(
+                                  controller: _repoController,
+                                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                                  decoration: InputDecoration(
+                                    labelText: 'Repo Adı',
+                                    labelStyle: const TextStyle(color: Color(0xFF00E5FF), fontSize: 12),
+                                    filled: true,
+                                    fillColor: Colors.black45,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(color: Color(0xFF00E5FF)),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 15),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _isSettingsOpen = false;
+                                        });
+                                      },
+                                      child: const Text('İptal', style: TextStyle(color: Colors.white54)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF00E5FF),
+                                        foregroundColor: Colors.black,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _isSettingsOpen = false;
+                                        });
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Ayarlar Kaydedildi! (Token: ${_tokenController.text.isNotEmpty ? "Mevcut" : "Boş"})',
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: const Text('Kaydet', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             );
           },
