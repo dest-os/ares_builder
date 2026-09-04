@@ -1,0 +1,49 @@
+name: Ares Otonom APK Derleyici
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodlari Cek
+        uses: actions/checkout@v3
+
+      - name: Java Kurulumu
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Flutter Kurulumu
+        uses: actions/setup-flutter@v2
+        with:
+          channel: 'stable'
+
+      - name: Paketleri Indir
+        run: flutter pub get
+
+      - name: APK Derle (Release)
+        run: flutter build apk --release
+
+      - name: Basarili Bildirimi Gondor (Ntfy)
+        if: success()
+        run: |
+          curl -d "👁️ Ares Builder: APK Başarıyla Derlendi!" https://ntfy.sh/ares_builder_notification_ibrahim
+
+      - name: Hata Logunu Sakla ve Bildir
+        if: failure()
+        run: |
+          mkdir -p .logs
+          flutter build apk --release > .logs/build_error.log 2>&1 || true
+          curl -d "❌ Ares Builder: Derleme Hatası Oluştu! Otonom Onarım Bekleniyor." https://ntfy.sh/ares_builder_notification_ibrahim
+
+      - name: APK Artifact Yukle
+        uses: actions/upload-artifact@v3
+        with:
+          name: AresAsistan-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
