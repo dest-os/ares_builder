@@ -40,7 +40,7 @@ class Ares3DButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onPressed: onPressed,
+            onTap: onPressed,
             borderRadius: BorderRadius.circular(16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
