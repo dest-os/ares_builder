@@ -48,30 +48,31 @@ class _AresMainScreenState extends State<AresMainScreen> {
 
             return Stack(
               children: [
-                // 1. Arka Plan Arayüz Tasarımı
+                // 1. Doğrudan assets/logo.png Görselini Ekran Arka Planı Yapıyoruz
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/images/ares_background.png',
+                    'assets/logo.png',
                     fit: BoxFit.fill,
                     errorBuilder: (context, error, stackTrace) {
-                      // Görsel yüklenene kadar yedek siber-punk zemin
-                      return Container(color: const Color(0xFF0A0C14));
+                      return const Center(
+                        child: Text(
+                          'logo.png yüklenemedi! pubspec.yaml kontrol edilmeli.',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      );
                     },
                   ),
                 ),
 
-                // 2. KOD YAPIŞTIRMA ALANI (Görseldeki çerçevenin tam ortasına oturur)
+                // 2. KOD YAPIŞTIRMA ALANI (Görseldeki "KOD YAPIŞTIRMA ALANI" kutusuna tam oturur)
                 Positioned(
                   left: w * 0.22,
                   width: w * 0.56,
-                  top: h * 0.50,
-                  height: h * 0.18,
+                  top: h * 0.51,
+                  height: h * 0.16,
                   child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    color: Colors.transparent,
                     child: TextField(
                       controller: _codeController,
                       maxLines: null,
@@ -90,11 +91,11 @@ class _AresMainScreenState extends State<AresMainScreen> {
                   ),
                 ),
 
-                // 3. DOSYA / KOD YÜKLE BUTONU (Sol alt tıklama alanı)
+                // 3. DOSYA / KOD YÜKLE BUTONU (Sol alt kutunun üzeri)
                 Positioned(
                   left: w * 0.06,
                   width: w * 0.41,
-                  bottom: h * 0.08,
+                  bottom: h * 0.07,
                   height: h * 0.18,
                   child: Material(
                     color: Colors.transparent,
@@ -110,11 +111,11 @@ class _AresMainScreenState extends State<AresMainScreen> {
                   ),
                 ),
 
-                // 4. APK OLUŞTUR & DERLE BUTONU (Sağ alt tıklama alanı)
+                // 4. APK OLUŞTUR & DERLE BUTONU (Sağ alt kutunun üzeri)
                 Positioned(
                   right: w * 0.06,
                   width: w * 0.41,
-                  bottom: h * 0.08,
+                  bottom: h * 0.07,
                   height: h * 0.18,
                   child: Material(
                     color: Colors.transparent,
