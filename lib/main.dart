@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Ekranı yatay (landscape) moda sabitliyoruz
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
@@ -48,15 +47,15 @@ class _AresMainScreenState extends State<AresMainScreen> {
 
             return Stack(
               children: [
-                // 1. Doğrudan assets/logo.png Görselini Ekran Arka Planı Yapıyoruz
+                // 1. TAM ARAYÜZ ARKA PLAN GÖRSELİ
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/logo.png',
+                    'assets/ares_bg.jpg',
                     fit: BoxFit.fill,
                     errorBuilder: (context, error, stackTrace) {
                       return const Center(
                         child: Text(
-                          'logo.png yüklenemedi! pubspec.yaml kontrol edilmeli.',
+                          'assets/ares_bg.jpg yüklenemedi! Lütfen klasörde ares_bg.jpg adıyla resim olduğundan emin olun.',
                           style: TextStyle(color: Colors.red),
                         ),
                       );
@@ -64,12 +63,12 @@ class _AresMainScreenState extends State<AresMainScreen> {
                   ),
                 ),
 
-                // 2. KOD YAPIŞTIRMA ALANI (Görseldeki "KOD YAPIŞTIRMA ALANI" kutusuna tam oturur)
+                // 2. KOD YAPIŞTIRMA ALANI
                 Positioned(
                   left: w * 0.22,
                   width: w * 0.56,
-                  top: h * 0.51,
-                  height: h * 0.16,
+                  top: h * 0.50,
+                  height: h * 0.18,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     color: Colors.transparent,
@@ -91,11 +90,11 @@ class _AresMainScreenState extends State<AresMainScreen> {
                   ),
                 ),
 
-                // 3. DOSYA / KOD YÜKLE BUTONU (Sol alt kutunun üzeri)
+                // 3. DOSYA / KOD YÜKLE BUTONU
                 Positioned(
                   left: w * 0.06,
                   width: w * 0.41,
-                  bottom: h * 0.07,
+                  bottom: h * 0.08,
                   height: h * 0.18,
                   child: Material(
                     color: Colors.transparent,
@@ -111,11 +110,11 @@ class _AresMainScreenState extends State<AresMainScreen> {
                   ),
                 ),
 
-                // 4. APK OLUŞTUR & DERLE BUTONU (Sağ alt kutunun üzeri)
+                // 4. APK OLUŞTUR & DERLE BUTONU
                 Positioned(
                   right: w * 0.06,
                   width: w * 0.41,
-                  bottom: h * 0.07,
+                  bottom: h * 0.08,
                   height: h * 0.18,
                   child: Material(
                     color: Colors.transparent,
