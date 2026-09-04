@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
-  runApp(const AresBuilderApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  // Ekranı yatay (landscape) moda sabitliyoruz
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]).then((_) {
+    runApp(const AresBuilderApp());
+  });
 }
 
 class AresBuilderApp extends StatelessWidget {
@@ -12,9 +20,7 @@ class AresBuilderApp extends StatelessWidget {
     return MaterialApp(
       title: 'Ares Builder',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0D0E15),
-      ),
+      theme: ThemeData.dark(),
       home: const AresMainScreen(),
     );
   }
@@ -33,143 +39,99 @@ class _AresMainScreenState extends State<AresMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF090A10),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            final h = constraints.maxHeight;
+
+            return Stack(
               children: [
-                // Üst Bar
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.black45,
-                        border: Border.all(color: const Color(0xFF00E5FF), width: 1.5),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Ares Builder',
-                        style: TextStyle(
-                          color: Color(0xFF00E5FF),
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.settings, color: Color(0xFF00E5FF), size: 28),
-                      onPressed: () {},
-                    ),
-                  ],
+                // 1. Arka Plan Arayüz Tasarımı
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/ares_background.png',
+                    fit: BoxFit.fill,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Görsel yüklenene kadar yedek siber-punk zemin
+                      return Container(color: const Color(0xFF0A0C14));
+                    },
+                  ),
                 ),
-                const SizedBox(height: 20),
 
-                // Göz Logosu Alanı
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF00E5FF).withOpacity(0.3),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.remove_red_eye_outlined,
-                    size: 70,
-                    color: Color(0xFF00E5FF),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Otonom APK Derleyici .......',
-                  style: TextStyle(
-                    color: Color(0xFF00E5FF),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Genişletilmiş Kod Yapıştırma Alanı
-                Expanded(
+                // 2. KOD YAPIŞTIRMA ALANI (Görseldeki çerçevenin tam ortasına oturur)
+                Positioned(
+                  left: w * 0.22,
+                  width: w * 0.56,
+                  top: h * 0.50,
+                  height: h * 0.18,
                   child: Container(
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF121420),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.5),
+                      color: Colors.black.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    padding: const EdgeInsets.all(12),
                     child: TextField(
                       controller: _codeController,
                       maxLines: null,
                       expands: true,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF00E5FF),
                         fontFamily: 'monospace',
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         hintText: 'KOD YAPIŞTIRMA ALANI...',
-                        hintStyle: TextStyle(color: Colors.white38),
+                        hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
 
-                // Alt Aksiyon Butonları
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF121420),
-                          side: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () {},
-                        child: const Text(
-                          'Dosya / Kod Yükle',
-                          style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                // 3. DOSYA / KOD YÜKLE BUTONU (Sol alt tıklama alanı)
+                Positioned(
+                  left: w * 0.06,
+                  width: w * 0.41,
+                  bottom: h * 0.08,
+                  height: h * 0.18,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Dosya Yükleme Paneli Açılıyor...')),
+                        );
+                      },
+                      child: Container(),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00E5FF),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        onPressed: () {},
-                        child: const Text(
-                          'APK Oluştur & Derle',
-                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                  ),
+                ),
+
+                // 4. APK OLUŞTUR & DERLE BUTONU (Sağ alt tıklama alanı)
+                Positioned(
+                  right: w * 0.06,
+                  width: w * 0.41,
+                  bottom: h * 0.08,
+                  height: h * 0.18,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('APK Derleme İşlemi Başlatıldı!')),
+                        );
+                      },
+                      child: Container(),
                     ),
-                  ],
+                  ),
                 ),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
