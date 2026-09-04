@@ -1,182 +1,175 @@
 import 'package:flutter/material.dart';
-import 'theme/ares_theme.dart';
-import 'widgets/ares_3d_button.dart';
 
 void main() {
-  runApp(const AresApp());
+  runApp(const AresBuilderApp());
 }
 
-class AresApp extends StatelessWidget {
-  const AresApp({super.key});
+class AresBuilderApp extends StatelessWidget {
+  const AresBuilderApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ares Builder',
       debugShowCheckedModeBanner: false,
-      theme: AresTheme.darkTheme,
-      home: const HomeScreen(),
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0D0E15),
+      ),
+      home: const AresMainScreen(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class AresMainScreen extends StatefulWidget {
+  const AresMainScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<AresMainScreen> createState() => _AresMainScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _AresMainScreenState extends State<AresMainScreen> {
   final TextEditingController _codeController = TextEditingController();
-  final TextEditingController _githubTokenController = TextEditingController();
-  final TextEditingController _geminiKeyController = TextEditingController();
-
-  void _showSettingsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AresColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.settings, color: AresColors.accent),
-            SizedBox(width: 8),
-            Text('Ares Ayarları', style: TextStyle(color: AresColors.textPrimary)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _githubTokenController,
-              style: const TextStyle(color: AresColors.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'GitHub PAT Token',
-                labelStyle: TextStyle(color: AresColors.textSecondary),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AresColors.accent)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _geminiKeyController,
-              style: const TextStyle(color: AresColors.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Gemini API Key',
-                labelStyle: TextStyle(color: AresColors.textSecondary),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AresColors.accent)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal', style: TextStyle(color: AresColors.textSecondary)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AresColors.primary),
-            onPressed: () {
-              // Ayarlar kaydedildi bildirimi
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Ayarlar başarıyla kaydedildi!')),
-              );
-            },
-            child: const Text('Kaydet', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AresColors.surface,
-        elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AresColors.accent, width: 2),
-                boxShadow: const [
-                  BoxShadow(color: AresColors.accent, blurRadius: 8, spreadRadius: 1)
-                ],
-              ),
-              child: const Icon(Icons.remove_red_eye_rounded, color: AresColors.accent, size: 22),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Ares Builder',
-              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
-            ),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF090A10),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings, color: AresColors.accent, size: 26),
-            onPressed: _showSettingsDialog,
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Otonom APK Derleyici & Kod Onarıcı',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AresColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AresColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AresColors.accent.withOpacity(0.3)),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Üst Bar
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black45,
+                        border: Border.all(color: const Color(0xFF00E5FF), width: 1.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Ares Builder',
+                        style: TextStyle(
+                          color: Color(0xFF00E5FF),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.settings, color: Color(0xFF00E5FF), size: 28),
+                      onPressed: () {},
+                    ),
+                  ],
                 ),
-                child: TextField(
-                  controller: _codeController,
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  style: const TextStyle(color: AresColors.textPrimary),
-                  decoration: const InputDecoration(
-                    hintText: 'Flutter / Dart kodlarınızı veya belge metnini buraya yapıştırın...',
-                    hintStyle: TextStyle(color: AresColors.textSecondary),
-                    border: InputBorder.none,
+                const SizedBox(height: 20),
+
+                // Göz Logosu Alanı
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF00E5FF).withOpacity(0.3),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.remove_red_eye_outlined,
+                    size: 70,
+                    color: Color(0xFF00E5FF),
                   ),
                 ),
-              ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Otonom APK Derleyici .......',
+                  style: TextStyle(
+                    color: Color(0xFF00E5FF),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Genişletilmiş Kod Yapıştırma Alanı
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF121420),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF00E5FF), width: 1.5),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: TextField(
+                      controller: _codeController,
+                      maxLines: null,
+                      expands: true,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'monospace',
+                        fontSize: 14,
+                      ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'KOD YAPIŞTIRMA ALANI...',
+                        hintStyle: TextStyle(color: Colors.white38),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Alt Aksiyon Butonları
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF121420),
+                          side: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () {},
+                        child: const Text(
+                          'Dosya / Kod Yükle',
+                          style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00E5FF),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () {},
+                        child: const Text(
+                          'APK Oluştur & Derle',
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Ares3DButton(
-              text: 'Dosya / Kod Yükle',
-              icon: Icons.attach_file,
-              color: AresColors.surface,
-              shadowColor: Colors.black,
-              onPressed: () {},
-            ),
-            const SizedBox(height: 16),
-            Ares3DButton(
-              text: 'APK Oluştur & Derle',
-              icon: Icons.build_circle_outlined,
-              color: AresColors.primary,
-              shadowColor: AresColors.primaryDark,
-              onPressed: () {},
-            ),
-          ],
+          ),
         ),
       ),
     );
