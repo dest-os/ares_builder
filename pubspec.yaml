@@ -20,6 +20,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Görselin yüklenmesi için gerekli olan tanım:
   assets:
     - assets/logo.png
+    - assets/ares_bg.jpg
