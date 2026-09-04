@@ -1,0 +1,39 @@
+name: Ares Builder - Otonom APK Derleyici
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repositoriyi Klonla
+        uses: actions/checkout@v4
+
+      - name: Java JDK Ortamını Kur
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Flutter SDK Kur
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Bağımlılıkları Yükle
+        run: flutter pub get
+
+      - name: APK Derle
+        run: flutter build apk --release
+
+      - name: APK Çıktısını Yayınla (Artifact)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
