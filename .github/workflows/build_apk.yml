@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -10,29 +10,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Repositoriyi Klonla
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Java JDK Ortamını Kur
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Flutter SDK Kur
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.5'
-          cache: true
+          flutter-version: '3.19.6'
+          channel: 'stable'
 
-      - name: Bağımlılıkları Yükle
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: APK Derle
+      - name: Build Release APK
         run: flutter build apk --release
 
-      - name: APK Çıktısını Yayınla (Artifact)
+      - name: Rename Output APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/ares_builder.apk
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: ares_builder
+          path: build/app/outputs/flutter-apk/ares_builder.apk
