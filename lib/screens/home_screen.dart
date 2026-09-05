@@ -66,12 +66,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // 2. KATMAN: Şeffaf KOD YAPIŞTIRMA ALANI
+                  // 2. KATMAN: Şeffaf KOD YAPIŞTIRMA ALANI (Yeni boş kutuya milimetrik oturtuldu)
                   Positioned(
-                    left: width * 0.22,
-                    top: height * 0.54,
-                    width: width * 0.56,
-                    height: height * 0.12,
+                    left: width * 0.23,  // Yatay başlangıç
+                    top: height * 0.53,   // Dikey başlangıç (Boş kutunun üstü)
+                    width: width * 0.54,  // Kutunun genişliği
+                    height: height * 0.15, // Kutunun yüksekliği (3-4 satır kod sığar)
                     child: Center(
                       child: TextField(
                         controller: _codeController,
@@ -80,30 +80,31 @@ class _HomeScreenState extends State<HomeScreen> {
                         textAlign: TextAlign.center,
                         textAlignVertical: TextAlignVertical.center,
                         style: const TextStyle(
-                          color: Color(0xFF00E5FF),
+                          color: Color(0xFF00E5FF), // Neon Mavi
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                         decoration: InputDecoration(
+                          // Kutunun içinde hiçbir ipucu yazısı görünmeyecek, 
+                          // çünkü resminizdeki "KOD YAZMA ALANI" üstte duruyor.
                           hintText: _selectedFileName.isEmpty ? "" : "Dosya: $_selectedFileName",
                           hintStyle: const TextStyle(
                             color: Color(0xFF00E5FF),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
                           ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
+                          contentPadding: const EdgeInsets.all(5.0),
                         ),
                       ),
                     ),
                   ),
 
-                  // 3. KATMAN: Dosya / Kod Yükle Butonu
+                  // 3. KATMAN: Dosya / Kod Yükle Butonu (Tıklama Alanı)
                   Positioned(
                     left: width * 0.06,
-                    top: height * 0.74,
+                    top: height * 0.75,
                     width: width * 0.42,
-                    height: height * 0.18,
+                    height: height * 0.16,
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: _pickFiles,
@@ -111,12 +112,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // 4. KATMAN: APK Oluştur & Derle Butonu (GÖNDERME İŞLEMİ BURADA YAPILIR)
+                  // 4. KATMAN: APK Oluştur & Derle Butonu (Tıklama Alanı)
                   Positioned(
                     left: width * 0.52,
-                    top: height * 0.74,
+                    top: height * 0.75,
                     width: width * 0.42,
-                    height: height * 0.18,
+                    height: height * 0.16,
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: () {
@@ -137,12 +138,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // 5. KATMAN: Sağ Üstteki Ayarlar Simgesi
+                  // 5. KATMAN: Sağ Üstteki Ayarlar Simgesi (Tıklama Alanı)
                   Positioned(
                     left: width * 0.87,
-                    top: height * 0.05,
+                    top: height * 0.06,
                     width: width * 0.10,
-                    height: height * 0.20,
+                    height: height * 0.19,
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: () {
