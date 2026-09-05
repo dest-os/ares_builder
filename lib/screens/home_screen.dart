@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return Stack(
               children: [
-                // 1. KATMAN: Görseli Ekranın Tamamına Kaplama (Sıfıra Sıfır)
+                // 1. KATMAN: Arka Plan Görseli
                 Positioned.fill(
                   child: Image.asset(
                     'assets/ares_bg.png',
@@ -61,12 +61,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 2. KATMAN: KOD YAPIŞTIRMA ALANI (Şeffaf Metin Girişi)
+                // 2. KATMAN: Şeffaf KOD YAPIŞTIRMA ALANI
                 Positioned(
                   left: width * 0.22,
-                  top: height * 0.52,
+                  top: height * 0.54,
                   width: width * 0.56,
-                  height: height * 0.18,
+                  height: height * 0.12,
                   child: Center(
                     child: TextField(
                       controller: _codeController,
@@ -80,9 +80,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
-                        hintText: _selectedFileName.isEmpty
-                            ? "Kodu buraya yazın veya dosya yükleyin..."
-                            : "Dosya: $_selectedFileName",
+                        // Varsayılan ipucu yazısı boş; resimdeki yazı görünecek.
+                        // Sadece dosya seçilirse ismi yazar.
+                        hintText: _selectedFileName.isEmpty ? "" : "Dosya: $_selectedFileName",
                         hintStyle: const TextStyle(
                           color: Color(0xFF00E5FF),
                           fontSize: 12,
@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 3. KATMAN: Dosya / Kod Yükle Butonu (Şeffaf Tıklama Alanı)
+                // 3. KATMAN: Dosya / Kod Yükle Butonu
                 Positioned(
                   left: width * 0.06,
                   top: height * 0.74,
@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 4. KATMAN: APK Oluştur & Derle Butonu (Şeffaf Tıklama Alanı)
+                // 4. KATMAN: APK Oluştur & Derle Butonu
                 Positioned(
                   left: width * 0.52,
                   top: height * 0.74,
@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 5. KATMAN: Sağ Üstteki Ayarlar Simgesi (Şeffaf Tıklama Alanı)
+                // 5. KATMAN: Sağ Üstteki Ayarlar Simgesi
                 Positioned(
                   left: width * 0.87,
                   top: height * 0.05,
