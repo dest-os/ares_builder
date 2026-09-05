@@ -11,8 +11,8 @@ void main() {
     DeviceOrientation.landscapeRight,
   ]);
 
-  // Ekranı tam ekran yapıyor, durum ve gezinti çubuklarını şeffaflaştırıp gizliyoruz
-  SystemChrome.setEnabledSystemUIMode(SystemUIMode.immersiveSticky);
+  // Ekranı tam ekran yapıyor, durum ve gezinti çubuklarını gizliyoruz
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
   runApp(const AresBuilderApp());
 }
