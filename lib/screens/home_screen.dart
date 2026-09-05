@@ -62,25 +62,36 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 2. KATMAN: Merkezlenmiş Kod Yazma / Metin Alanı
+                // 2. KATMAN: Merkezlenmiş Kod Yazma / Metin Alanı (Dikeyde ortalandı ve Neon Mavi yapıldı)
                 Positioned(
-                  left: width * 0.230,
-                  top: height * 0.530,
-                  width: width * (0.770 - 0.230),
-                  height: height * (0.670 - 0.530),
-                  child: TextField(
-                    controller: _codeController,
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.center,
-                    style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 13),
-                    decoration: InputDecoration(
-                      hintText: _selectedFileName.isEmpty 
-                          ? "Kodu buraya yazın veya dosya yükleyin..." 
-                          : "Dosya: $_selectedFileName",
-                      hintStyle: const TextStyle(color: Colors.white54, fontSize: 11),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  left: width * 0.250,
+                  top: height * 0.585,
+                  width: width * (0.750 - 0.250),
+                  height: height * (0.710 - 0.585),
+                  child: Center(
+                    child: TextField(
+                      controller: _codeController,
+                      maxLines: null,
+                      expands: true,
+                      textAlign: TextAlign.center,
+                      textAlignVertical: TextAlignVertical.center,
+                      style: const TextStyle(
+                        color: Color(0xFF00E5FF), 
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: _selectedFileName.isEmpty 
+                            ? "Kodu buraya yazın veya dosya yükleyin..." 
+                            : "Dosya: $_selectedFileName",
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF00E5FF), 
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
                     ),
                   ),
                 ),
