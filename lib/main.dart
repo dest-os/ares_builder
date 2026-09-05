@@ -5,27 +5,20 @@ import 'screens/home_screen.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Ekranı tam ekran yapıp alt ve üst sistem çubuklarını gizliyoruz
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      navigationBarColor: Color(0xFF03080E),
-      navigationBarDividerColor: Colors.transparent,
+      systemNavigationBarColor: Color(0xFF03080E),
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
 
-  // Uygulamayı sadece yatay moda sabitliyoruz
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]).then((_) {
-    runApp(const MyApp());
-  });
+  runApp(const AresBuilderApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AresBuilderApp extends StatelessWidget {
+  const AresBuilderApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF03080E),
+        useMaterial3: true,
       ),
       home: const HomeScreen(),
     );
