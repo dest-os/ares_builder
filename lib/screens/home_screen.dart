@@ -45,8 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF03080E),
-      body: Container(
-        color: const Color(0xFF03080E),
+      body: SizedBox.expand(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double width = constraints.maxWidth;
@@ -54,20 +53,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return Stack(
               children: [
-                // 1. KATMAN: Arka Plan Görseli
+                // 1. KATMAN: Görseli Ekranın Tamamına Kaplama (Sıfıra Sıfır)
                 Positioned.fill(
                   child: Image.asset(
                     'assets/ares_bg.png',
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                   ),
                 ),
 
-                // 2. KATMAN: Merkezlenmiş Kod Yazma / Metin Alanı (Dikeyde ortalandı ve Neon Mavi yapıldı)
+                // 2. KATMAN: KOD YAPIŞTIRMA ALANI (Şeffaf Metin Girişi)
                 Positioned(
-                  left: width * 0.250,
-                  top: height * 0.585,
-                  width: width * (0.750 - 0.250),
-                  height: height * (0.710 - 0.585),
+                  left: width * 0.22,
+                  top: height * 0.52,
+                  width: width * 0.56,
+                  height: height * 0.18,
                   child: Center(
                     child: TextField(
                       controller: _codeController,
@@ -76,18 +75,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       textAlign: TextAlign.center,
                       textAlignVertical: TextAlignVertical.center,
                       style: const TextStyle(
-                        color: Color(0xFF00E5FF), 
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF00E5FF),
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
-                        hintText: _selectedFileName.isEmpty 
-                            ? "Kodu buraya yazın veya dosya yükleyin..." 
+                        hintText: _selectedFileName.isEmpty
+                            ? "Kodu buraya yazın veya dosya yükleyin..."
                             : "Dosya: $_selectedFileName",
                         hintStyle: const TextStyle(
-                          color: Color(0xFF00E5FF), 
+                          color: Color(0xFF00E5FF),
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
@@ -96,12 +95,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 3. KATMAN: Dosya / Kod Yükle Butonu
+                // 3. KATMAN: Dosya / Kod Yükle Butonu (Şeffaf Tıklama Alanı)
                 Positioned(
-                  left: width * 0.080,
-                  top: height * 0.760,
-                  width: width * (0.480 - 0.080),
-                  height: height * (0.910 - 0.760),
+                  left: width * 0.06,
+                  top: height * 0.74,
+                  width: width * 0.42,
+                  height: height * 0.18,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: _pickFiles,
@@ -109,12 +108,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 4. KATMAN: APK Oluştur & Derle Butonu
+                // 4. KATMAN: APK Oluştur & Derle Butonu (Şeffaf Tıklama Alanı)
                 Positioned(
-                  left: width * 0.520,
-                  top: height * 0.760,
-                  width: width * (0.920 - 0.520),
-                  height: height * (0.910 - 0.760),
+                  left: width * 0.52,
+                  top: height * 0.74,
+                  width: width * 0.42,
+                  height: height * 0.18,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
@@ -132,12 +131,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // 5. KATMAN: Ayarlar Butonu (Sağ Üst)
+                // 5. KATMAN: Sağ Üstteki Ayarlar Simgesi (Şeffaf Tıklama Alanı)
                 Positioned(
-                  left: width * 0.830,
-                  top: height * 0.100,
-                  width: width * (0.940 - 0.830),
-                  height: height * (0.280 - 0.100),
+                  left: width * 0.87,
+                  top: height * 0.05,
+                  width: width * 0.10,
+                  height: height * 0.20,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTap: () {
