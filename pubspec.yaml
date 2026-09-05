@@ -2,7 +2,7 @@ name: ares_builder
 description: "Ares Builder - Otonom APK Derleyici"
 publish_to: 'none'
 
-version: 1.0.1+3
+version: 1.0.2+3
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -20,5 +20,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
-    - assets/
+    - assets/ares_bg.png
