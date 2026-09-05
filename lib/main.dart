@@ -4,21 +4,15 @@ import 'screens/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Ekranı doğrudan yatay moda sabitliyoruz
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
 
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Color(0xFF03080E),
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
+  // Ekranı tam ekran yapıyor, durum ve gezinti çubuklarını şeffaflaştırıp gizliyoruz
+  SystemChrome.setEnabledSystemUIMode(SystemUIMode.immersiveSticky);
 
   runApp(const AresBuilderApp());
 }
