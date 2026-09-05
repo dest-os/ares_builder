@@ -22,15 +22,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
           return Stack(
             children: [
-              // 1. KATMAN: Ekranı Tam Kaplayan Arka Plan Görseli
+              // 1. KATMAN: Yeni Arka Plan Görseli (PNG)
               Positioned.fill(
                 child: Image.asset(
-                  'assets/images/ares_bg.png',
+                  'assets/ares_bg.png',
                   fit: BoxFit.cover,
                 ),
               ),
 
-              // 2. KATMAN: Şeffaf Kod Giriş Alanı (Görseldeki "KOD YAPIŞTIRMA ALANI" üzerine gelir)
+              // 2. KATMAN: Şeffaf Kod Giriş Alanı
               Positioned(
                 left: width * 0.230,
                 top: height * 0.530,
@@ -42,14 +42,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   expands: true,
                   style: const TextStyle(color: Color(0xFF00E5FF), fontSize: 14),
                   decoration: const InputDecoration(
-                    hintText: '', // Görseldeki yazı kalacak, tıkladığında buraya yazacak
+                    hintText: '',
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 ),
               ),
 
-              // 3. KATMAN: Şeffaf "Dosya / Kod Yükle" Buton Katmanı (Sol Alt)
+              // 3. KATMAN: Şeffaf "Dosya / Kod Yükle" Butonu
               Positioned(
                 left: width * 0.080,
                 top: height * 0.760,
@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // 4. KATMAN: Şeffaf "APK Oluştur & Derle" Buton Katmanı (Sağ Alt)
+              // 4. KATMAN: Şeffaf "APK Oluştur & Derle" Butonu
               Positioned(
                 left: width * 0.520,
                 top: height * 0.760,
