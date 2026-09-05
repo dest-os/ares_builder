@@ -21,5 +21,3 @@ flutter:
   uses-material-design: true
   assets:
     - assets/ares_bg.png
-    - assets/ares_bg.jpg
-    - assets/logo.png
