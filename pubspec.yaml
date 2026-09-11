@@ -1,6 +1,7 @@
 name: ares_builder
-description: A new Flutter project.
+description: "A new Flutter project."
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -9,14 +10,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  file_picker: ^8.0.0
+  cupertino_icons: ^1.0.8
   shared_preferences: ^2.2.2
+  file_picker: ^8.0.0
   http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
