@@ -1,11 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Tam ekran ve yatay moda sabitleme
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
@@ -31,39 +32,124 @@ class AresBuilderApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _codeController = TextEditingController();
+  final FocusNode _codeFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    _codeFocusNode.dispose();
+    super.dispose();
+  }
+
   // Telefon Hafızasından Dosya Seçme İşlemi
-  Future<void> _pickFile(BuildContext context) async {
+  Future<void> _pickFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        allowMultiple: true,
         type: FileType.any,
       );
 
-      if (result != null && result.files.isNotEmpty) {
-        String fileName = result.files.first.name;
-        if (context.mounted) {
+      if (result != null && result.files.single.path != null) {
+        String fileName = result.files.single.name;
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Seçilen Dosya: $fileName (${result.files.length} adet dosya seçildi)'),
+              content: Text('Yüklendi: $fileName'),
               backgroundColor: Colors.green,
             ),
           );
         }
-      } else {
-        if (context.mounted) {
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Dosya açma hatası: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // GitHub Actions APK Derleme Tetikleme
+  Future<void> _startBuild() async {
+    if (_codeController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen önce kod yapıştırın veya dosya yükleyin!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Derleme komutu GitHub\'a gönderiliyor...'),
+        backgroundColor: Colors.blueAccent,
+      ),
+    );
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final owner = prefs.getString('github_owner') ?? '';
+      final repo = prefs.getString('github_repo') ?? '';
+      final token = prefs.getString('github_token') ?? '';
+
+      if (owner.isEmpty || repo.isEmpty || token.isEmpty) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Dosya seçimi iptal edildi.')),
+            const SnackBar(
+              content: Text('Lütfen Ayarlar sayfasında tüm GitHub bilgilerini girin!'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final url = Uri.parse('https://api.github.com/repos/$owner/$repo/dispatches');
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'event_type': 'build-apk'}),
+      );
+
+      if (mounted) {
+        if (response.statusCode == 204) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('APK Derleme Başlatıldı! GitHub Actions sekmesinden takip edebilirsiniz.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Hata koda göre: ${response.statusCode} - ${response.body}'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       }
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Dosya yöneticisi açılırken hata oluştu: $e'),
+            content: Text('Bağlantı hatası: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -74,64 +160,128 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true, // Klavyenin ekranı kapatmasını önler
       body: Stack(
         children: [
-          // Arka plan tam ekran oturur
+          // 1. Arka plan resmi
           Positioned.fill(
             child: Image.asset(
               'assets/ares_bg.png',
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(color: Colors.black87),
             ),
           ),
 
-          // 1. SAĞ ÜST: Ayarlar (Küp/Çark İkon Alanı)
-          Positioned(
-            top: 20,
-            right: 20,
-            width: 70,
-            height: 70,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                );
-              },
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-
-          // 2. SOL ALT: Dosya / Kod Yükle Buton Alanı
-          Positioned(
-            bottom: 25,
-            left: 40,
-            width: 320,
-            height: 60,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => _pickFile(context),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-
-          // 3. SAĞ ALT: APK Oluştur & Derle Buton Alanı
-          Positioned(
-            bottom: 25,
-            right: 40,
-            width: 320,
-            height: 60,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('APK Derleme İşlemi Başlatıldı!'),
-                    backgroundColor: Colors.blueAccent,
+          // 2. KOD YAZMA VE İŞLEM ALANI (Dokunma engelleri kaldırıldı)
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  // Üst Bar: Başlık ve Ayarlar Butonu
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "ARES BUILDER",
+                        style: TextStyle(
+                          color: Colors.cyanAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.settings, color: Colors.white, size: 28),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                );
-              },
-              child: Container(color: Colors.transparent),
+                  const SizedBox(height: 10),
+
+                  // Orta Alan: Kod Yazma / Yapıştırma Kutusu
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.cyanAccent.withOpacity(0.6), width: 1.5),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "PROJE KODLARI (REPO BLOKU)",
+                                style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.cyan.shade800,
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                ),
+                                onPressed: _pickFile,
+                                icon: const Icon(Icons.folder_open, size: 16, color: Colors.white),
+                                label: const Text("Dosya Seç", style: TextStyle(color: Colors.white, fontSize: 12)),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                FocusScope.of(context).requestFocus(_codeFocusNode);
+                              },
+                              child: TextField(
+                                controller: _codeController,
+                                focusNode: _codeFocusNode,
+                                maxLines: null,
+                                expands: true,
+                                enabled: true,
+                                readOnly: false,
+                                keyboardType: TextInputType.multiline,
+                                style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 13),
+                                decoration: const InputDecoration(
+                                  hintText: "Kod bloğunu buraya dokunup yapıştırın...",
+                                  hintStyle: TextStyle(color: Colors.white38),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Alt Bar: Derle Butonu
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                      ),
+                      onPressed: _startBuild,
+                      icon: const Icon(Icons.build, color: Colors.white),
+                      label: const Text(
+                        'DERLE VE APK YAP',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -190,7 +340,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: const Text('Ayarlar & API Anahtarları'),
         backgroundColor: Colors.black,
-        elevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -198,65 +347,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('GitHub Kullanıcı Adı (Owner)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
+              const Text('GitHub Kullanıcı Adı (Owner)', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
               TextField(
                 controller: _ownerController,
-                decoration: const InputDecoration(
-                  hintText: 'Örn: ibrahim-halil',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(hintText: 'Örn: ibrahim-halil', border: OutlineInputBorder()),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              const Text('Depo Adı (Repo)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
+              const Text('Depo Adı (Repo)', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
               TextField(
                 controller: _repoController,
-                decoration: const InputDecoration(
-                  hintText: 'Örn: ares_builder',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(hintText: 'Örn: ares_launcher', border: OutlineInputBorder()),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              const Text('GitHub Personal Access Token (PAT)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
+              const Text('GitHub Personal Access Token (PAT)', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
               TextField(
                 controller: _tokenController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  hintText: 'ghp_xxxxxxxxxxxx',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(hintText: 'ghp_xxxxxxxxxxxx', border: OutlineInputBorder()),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              const Text('Gemini API Key', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
+              const Text('Gemini API Key', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
               TextField(
                 controller: _geminiKeyController,
                 obscureText: true,
-                decoration: const InputDecoration(
-                  hintText: 'AlzaSyxxxxxxxxxxxx',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(hintText: 'AIzaSyxxxxxxxxxxxx', border: OutlineInputBorder()),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 48,
                 child: ElevatedButton(
                   onPressed: _saveSettings,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                  child: const Text('Kaydet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.lightBlue),
+                  child: const Text('Kaydet', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
