@@ -7,7 +7,19 @@ import 'package:http/http.dart' as http;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  
+  // Tabletlerde geri/ev tuşlarının kaybolmaması için kenardan kenara transparan görünüm
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      navigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.light,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+
+  // Otomatik Yatay Mod Yapılandırması
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
@@ -53,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Yüklendi: $fileName'),
+              content: Text('Dosya yüklendi: $fileName'),
               backgroundColor: Colors.green,
             ),
           );
@@ -71,7 +83,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Varsayılan GitHub Actions Workflow İçeriği
+  // OTONOM LAUNCHER PROJE ŞABLONLARI
+  final String _defaultPubspec = '''
+name: ares_launcher
+description: "Ares Builder Tarafından Otomatik Üretilen Dinamik Launcher"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  http: ^1.2.0
+  shared_preferences: ^2.2.2
+  file_picker: ^8.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/backgrounds/
+    - assets/skins/
+''';
+
   final String _defaultWorkflowYaml = '''
 name: Build Android APK
 
@@ -84,41 +125,116 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Repoyu Klonla
         uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - name: Java 17 Kur
+        uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Flutter SDK Kur
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.x'
           channel: 'stable'
 
-      - name: Install Dependencies
+      - name: Bağımlılıkları Yükle
         run: flutter pub get
 
-      - name: Build APK
+      - name: APK Derle
         run: flutter build apk --release
 
-      - name: Upload APK
+      - name: APK Artifact Olarak Yükle
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 ''';
 
-  // GitHub'a Dosyaları Otomatik Yükleme ve Derlemeyi Tetikleme
+  final String _defaultAndroidManifest = '''
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
+    <application
+        android:label="Ares Launcher"
+        android:name="\${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="sensorLandscape">
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+</manifest>
+''';
+
+  // GitHub REST API Dosya Push/Create Metodu
+  Future<bool> _pushFileToGithub({
+    required String owner,
+    required String repo,
+    required String token,
+    required String filePath,
+    required String content,
+    required String commitMessage,
+  }) async {
+    final url = Uri.parse('https://api.github.com/repos/$owner/$repo/contents/$filePath');
+
+    final getRes = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/vnd.github.v3+json'},
+    );
+
+    String? sha;
+    if (getRes.statusCode == 200) {
+      final body = jsonDecode(getRes.body);
+      sha = body['sha'];
+    }
+
+    final contentBase64 = base64Encode(utf8.encode(content));
+    final putRes = await http.put(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'message': commitMessage,
+        'content': contentBase64,
+        if (sha != null) 'sha': sha,
+      }),
+    );
+
+    return (putRes.statusCode == 200 || putRes.statusCode == 201);
+  }
+
+  // OTONOM TÜM PROJE AĞACINI KURMA VE DERLEMEYİ BAŞLATMA
   Future<void> _startBuild() async {
     final codeText = _codeController.text.trim();
     if (codeText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Lütfen önce kod yapıştırın veya dosya yükleyin!'),
+          content: Text('Lütfen önce kod yapıştırın!'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -134,7 +250,7 @@ jobs:
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Lütfen Ayarlar sayfasında tüm GitHub bilgilerini girin!'),
+            content: Text('Lütfen Ayarlar sayfasında tüm GitHub bilgilerini eksiksiz girin!'),
             backgroundColor: Colors.red,
           ),
         );
@@ -144,66 +260,74 @@ jobs:
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Sistem kontrol ediliyor ve dosyalar GitHub\'a aktarılıyor...'),
+        content: Text('Sıfırdan Proje Ağacı Hazırlanıyor ve Kodlar Aktarılıyor...'),
         backgroundColor: Colors.blueAccent,
+        duration: Duration(seconds: 3),
       ),
     );
 
     try {
-      // 1. OTONOM ADIM: .github/workflows/build_apk.yml VAR MI KONTROL ET, YOKSA OLUŞTUR
-      final workflowUrl = Uri.parse('https://api.github.com/repos/$owner/$repo/contents/.github/workflows/build_apk.yml');
-      final workflowCheck = await http.get(
-        workflowUrl,
-        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/vnd.github.v3+json'},
+      // 1. ADIM: pubspec.yaml Kurulumu
+      await _pushFileToGithub(
+        owner: owner,
+        repo: repo,
+        token: token,
+        filePath: 'pubspec.yaml',
+        content: _defaultPubspec,
+        commitMessage: 'Ares Builder: pubspec.yaml otonom kuruldu',
       );
 
-      if (workflowCheck.statusCode == 404) {
-        // Workflow yoksa otonom olarak oluşturuyoruz
-        final workflowBase64 = base64Encode(utf8.encode(_defaultWorkflowYaml));
-        await http.put(
-          workflowUrl,
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'message': 'Ares Builder: Otomatik Workflow Oluşturuldu',
-            'content': workflowBase64,
-          }),
-        );
-      }
-
-      // 2. OTONOM ADIM: lib/main.dart DOSYASINI GÜNCELLE VEYA OLUŞTUR
-      final mainDartUrl = Uri.parse('https://api.github.com/repos/$owner/$repo/contents/lib/main.dart');
-      final mainCheck = await http.get(
-        mainDartUrl,
-        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/vnd.github.v3+json'},
+      // 2. ADIM: GitHub Actions Workflow Kurulumu
+      await _pushFileToGithub(
+        owner: owner,
+        repo: repo,
+        token: token,
+        filePath: '.github/workflows/build_apk.yml',
+        content: _defaultWorkflowYaml,
+        commitMessage: 'Ares Builder: Workflow otonom kuruldu',
       );
 
-      String? sha;
-      if (mainCheck.statusCode == 200) {
-        final body = jsonDecode(mainCheck.body);
-        sha = body['sha'];
-      }
-
-      final codeBase64 = base64Encode(utf8.encode(codeText));
-      final putMainResponse = await http.put(
-        mainDartUrl,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'message': 'Ares Builder: Otomatik Kod Güncellemesi',
-          'content': codeBase64,
-          if (sha != null) 'sha': sha,
-        }),
+      // 3. ADIM: AndroidManifest.xml Kurulumu (İzinler Dahil)
+      await _pushFileToGithub(
+        owner: owner,
+        repo: repo,
+        token: token,
+        filePath: 'android/app/src/main/AndroidManifest.xml',
+        content: _defaultAndroidManifest,
+        commitMessage: 'Ares Builder: AndroidManifest otonom kuruldu',
       );
 
-      if (putMainResponse.statusCode == 200 || putMainResponse.statusCode == 201) {
-        // 3. OTONOM ADIM: DERLEMEYİ TETİKLE
+      // 4. ADIM: Assets Klasör Tutucuları (.gitkeep)
+      await _pushFileToGithub(
+        owner: owner,
+        repo: repo,
+        token: token,
+        filePath: 'assets/backgrounds/.gitkeep',
+        content: '',
+        commitMessage: 'Ares Builder: Arka plan klasörü hazırlandı',
+      );
+
+      await _pushFileToGithub(
+        owner: owner,
+        repo: repo,
+        token: token,
+        filePath: 'assets/skins/.gitkeep',
+        content: '',
+        commitMessage: 'Ares Builder: Skins klasörü hazırlandı',
+      );
+
+      // 5. ADIM: Yapıştırılan Kodu lib/main.dart Olarak Yükleme
+      bool codeSuccess = await _pushFileToGithub(
+        owner: owner,
+        repo: repo,
+        token: token,
+        filePath: 'lib/main.dart',
+        content: codeText,
+        commitMessage: 'Ares Builder: Launcher Ana Kodu Yüklendi',
+      );
+
+      if (codeSuccess) {
+        // 6. ADIM: GitHub Actions APK Derlemesini Tetikleme
         final dispatchUrl = Uri.parse('https://api.github.com/repos/$owner/$repo/dispatches');
         final dispatchResponse = await http.post(
           dispatchUrl,
@@ -219,8 +343,9 @@ jobs:
           if (dispatchResponse.statusCode == 204) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Her şey otomatik hazırlandı ve APK derlemesi başlatıldı!'),
+                content: Text('Tüm dosya ağacı oluşturuldu ve APK derlemesi başarıyla başlatıldı!'),
                 backgroundColor: Colors.green,
+                duration: Duration(seconds: 5),
               ),
             );
           } else {
@@ -235,8 +360,8 @@ jobs:
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Kod aktarım hatası: ${putMainResponse.statusCode}'),
+            const SnackBar(
+              content: Text('Kod aktarılırken hata oluştu! GitHub Token izinlerinizi kontrol edin.'),
               backgroundColor: Colors.red,
             ),
           );
@@ -266,13 +391,16 @@ jobs:
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
+            // Siberpunk Arka Plan
             Positioned.fill(
               child: Image.asset(
-                'assets/ares_bg.png',
+                'assets/images/ares_bg.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(color: Colors.black87),
               ),
             ),
+
+            // Ayarlar Butonu (Sağ Üst Dokunmatik Alan)
             Positioned(
               top: screenSize.height * 0.04,
               right: screenSize.width * 0.02,
@@ -290,6 +418,8 @@ jobs:
                 child: Container(color: Colors.transparent),
               ),
             ),
+
+            // Kod Yapıştırma Metin Alanı (Orta)
             Positioned(
               top: screenSize.height * 0.54,
               left: screenSize.width * 0.25,
@@ -310,7 +440,7 @@ jobs:
                     fontSize: 11,
                   ),
                   decoration: const InputDecoration(
-                    hintText: "Kod bloğuna basılı tutup yapıştırın...",
+                    hintText: "Kod alanına basılı tutup yapıştırın...",
                     hintStyle: TextStyle(color: Colors.white30, fontSize: 10),
                     border: InputBorder.none,
                     isDense: true,
@@ -325,6 +455,8 @@ jobs:
                 ),
               ),
             ),
+
+            // Dosya / Kod Yükle Butonu (Sol Alt)
             Positioned(
               bottom: screenSize.height * 0.04,
               left: screenSize.width * 0.04,
@@ -339,6 +471,8 @@ jobs:
                 child: Container(color: Colors.transparent),
               ),
             ),
+
+            // APK Oluştur & Derle Butonu (Sağ Alt)
             Positioned(
               bottom: screenSize.height * 0.04,
               right: screenSize.width * 0.04,
@@ -421,7 +555,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 6),
               TextField(
                 controller: _ownerController,
-                decoration: const InputDecoration(hintText: 'Örn: ibrahim-halil', border: OutlineInputBorder()),
+                decoration: const InputDecoration(hintText: 'Örn: github_kullanici_adin', border: OutlineInputBorder()),
               ),
               const SizedBox(height: 14),
 
