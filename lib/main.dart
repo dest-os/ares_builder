@@ -32,9 +32,6 @@ class AresBuilderApp extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// ANA EKRAN (MAIN HOME SCREEN)
-// ============================================================================
 class MainHomeScreen extends StatefulWidget {
   const MainHomeScreen({super.key});
 
@@ -45,7 +42,6 @@ class MainHomeScreen extends StatefulWidget {
 class _MainHomeScreenState extends State<MainHomeScreen> {
   final TextEditingController _codeController = TextEditingController();
 
-  // Cihaz Depolamasından Dosya / Kod Seçme
   Future<void> _pickAndLoadFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -66,7 +62,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     }
   }
 
-  // Ares Temalı Özel SnackBar Uyarısı
   void _showAresSnackBar(String message) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -90,7 +85,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     );
   }
 
-  // APK Derleme İşlemi Tetikleme
   void _startBuildProcess() {
     if (_codeController.text.trim().isEmpty) {
       _showAresSnackBar('Lütfen önce kod yapıştırın veya dosya yükleyin!');
@@ -112,23 +106,19 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             child: Image.asset(
               'assets/ares_bg.png',
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: const Color(0xFF020B14),
-              ),
             ),
           ),
 
-          // Ana İçerik Katmanı
+          // İçerik Katmanı
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Column(
                 children: [
-                  // ÜST BAR (Başlık, İsim ve Ayarlar Çarkı)
+                  // Üst Bar
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Ares Builder Sol Etiket
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
@@ -146,8 +136,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                           ),
                         ),
                       ),
-
-                      // İbrahim Halil Ezen ve Ayarlar Çarkı (Sağ Üst)
                       Row(
                         children: [
                           Container(
@@ -189,7 +177,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
                   const SizedBox(height: 12),
 
-                  // ORTA ALAN: Ares Göz Simgesi ve Başlıklar
+                  // Orta Logo (assets/logo.png)
                   Column(
                     children: [
                       Container(
@@ -208,13 +196,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         ),
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/ares_eye.png',
+                            'assets/logo.png',
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => const Icon(
-                              Icons.remove_red_eye_outlined,
-                              color: Color(0xFF00E5FF),
-                              size: 36,
-                            ),
                           ),
                         ),
                       ),
@@ -241,7 +224,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
                   const SizedBox(height: 10),
 
-                  // KOD YAZMA ALANI (Kutu)
+                  // Kod Yazma Kutusu
                   Container(
                     width: screenSize.width * 0.85,
                     height: 120,
@@ -275,11 +258,10 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ALT BUTONLAR (Dosya Yükle / APK Derle)
+                  // Alt Butonlar
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Dosya / Kod Yükle Butonu
                       ElevatedButton.icon(
                         onPressed: _pickAndLoadFile,
                         icon: const Icon(Icons.file_upload_outlined, color: Color(0xFF00E5FF)),
@@ -300,10 +282,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 20),
-
-                      // APK Oluştur & Derle Butonu
                       ElevatedButton.icon(
                         onPressed: _startBuildProcess,
                         icon: const Icon(Icons.build_outlined, color: Color(0xFF00E5FF)),
@@ -336,9 +315,6 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   }
 }
 
-// ============================================================================
-// AYARLAR VE API ANAHTARLARI EKRANI (SETTINGS SCREEN)
-// ============================================================================
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -358,7 +334,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadSettings();
   }
 
-  // Kayıtlı Ayarları Cihazdan Yükleme
   Future<void> _loadSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -369,7 +344,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  // Ayarları Cihaza Kaydetme
   Future<void> _saveSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('github_owner', _ownerController.text.trim());
@@ -428,45 +402,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1) GitHub Kullanıcı Adı (Owner)
               _buildInputField(
                 label: 'GitHub Kullanıcı Adı (Owner)',
                 hint: 'Örn: ibrahim-halil',
                 controller: _ownerController,
               ),
-
               const SizedBox(height: 16),
-
-              // 2) Depo Adı (Repo)
               _buildInputField(
                 label: 'Depo Adı (Repo)',
                 hint: 'Örn: ares_launcher',
                 controller: _repoController,
               ),
-
               const SizedBox(height: 16),
-
-              // 3) GitHub Personal Access Token (PAT)
               _buildInputField(
                 label: 'GitHub Personal Access Token (PAT)',
                 hint: 'ghp_xxxxxxxxxxxx',
                 controller: _patController,
                 obscureText: true,
               ),
-
               const SizedBox(height: 16),
-
-              // 4) Gemini API Key
               _buildInputField(
                 label: 'Gemini API Key',
                 hint: 'AIzaSyxxxxxxxxxxxxx',
                 controller: _geminiController,
                 obscureText: true,
               ),
-
               const SizedBox(height: 28),
-
-              // 5) Kaydet Butonu (Ares Mavi Temalı)
               SizedBox(
                 width: double.infinity,
                 height: 48,
@@ -496,7 +457,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Metin Giriş Kutuları Tasarımı
   Widget _buildInputField({
     required String label,
     required String hint,
