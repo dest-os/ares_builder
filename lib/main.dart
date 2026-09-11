@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Tam ekran ve sadece yatay moda kilitliyoruz
+  // Tam ekran ve yatay moda sabitleme
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
@@ -33,12 +34,49 @@ class AresBuilderApp extends StatelessWidget {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  // Telefon Hafızasından Dosya Seçme İşlemi
+  Future<void> _pickFile(BuildContext context) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.any,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        String fileName = result.files.first.name;
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Seçilen Dosya: $fileName (${result.files.length} adet dosya seçildi)'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Dosya seçimi iptal edildi.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Dosya yöneticisi açılırken hata oluştu: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Arka plan tam ekran oturur, hiçbir başlık çubuğu olmaz
+          // Arka plan tam ekran oturur
           Positioned.fill(
             child: Image.asset(
               'assets/ares_bg.png',
@@ -46,7 +84,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // 1. SAĞ ÜST: Ayarlar (Küp/Çark İkonu Bölgesi)
+          // 1. SAĞ ÜST: Ayarlar (Küp/Çark İkon Alanı)
           Positioned(
             top: 20,
             right: 20,
@@ -64,7 +102,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // 2. SOL ALT: Dosya / Kod Yükle Butonu
+          // 2. SOL ALT: Dosya / Kod Yükle Buton Alanı
           Positioned(
             bottom: 25,
             left: 40,
@@ -72,16 +110,12 @@ class HomeScreen extends StatelessWidget {
             height: 60,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Dosya / Kod Yükleme Alanı Açılıyor...')),
-                );
-              },
+              onTap: () => _pickFile(context),
               child: Container(color: Colors.transparent),
             ),
           ),
 
-          // 3. SAĞ ALT: APK Oluştur & Derle Butonu
+          // 3. SAĞ ALT: APK Oluştur & Derle Buton Alanı
           Positioned(
             bottom: 25,
             right: 40,
@@ -91,7 +125,10 @@ class HomeScreen extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('APK Derleme İşlemi Başlatıldı!')),
+                  const SnackBar(
+                    content: Text('APK Derleme İşlemi Başlatıldı!'),
+                    backgroundColor: Colors.blueAccent,
+                  ),
                 );
               },
               child: Container(color: Colors.transparent),
