@@ -21,9 +21,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Flutter Ortamını Kur
+      - name: Flutter Ortamını Kur (Sabit Sürüm)
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.19.6'
           channel: 'stable'
           cache: true
 
