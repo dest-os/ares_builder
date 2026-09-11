@@ -71,8 +71,51 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Varsayılan GitHub Actions Workflow İçeriği
+  final String _defaultWorkflowYaml = '''
+name: Build Android APK
+
+on:
+  repository_dispatch:
+    types: [build-apk]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.x'
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+''';
+
+  // GitHub'a Dosyaları Otomatik Yükleme ve Derlemeyi Tetikleme
   Future<void> _startBuild() async {
-    if (_codeController.text.trim().isEmpty) {
+    final codeText = _codeController.text.trim();
+    if (codeText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Lütfen önce kod yapıştırın veya dosya yükleyin!'),
@@ -82,54 +125,118 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    final owner = prefs.getString('github_owner') ?? '';
+    final repo = prefs.getString('github_repo') ?? '';
+    final token = prefs.getString('github_token') ?? '';
+
+    if (owner.isEmpty || repo.isEmpty || token.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Lütfen Ayarlar sayfasında tüm GitHub bilgilerini girin!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Derleme komutu GitHub\'a gönderiliyor...'),
+        content: Text('Sistem kontrol ediliyor ve dosyalar GitHub\'a aktarılıyor...'),
         backgroundColor: Colors.blueAccent,
       ),
     );
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final owner = prefs.getString('github_owner') ?? '';
-      final repo = prefs.getString('github_repo') ?? '';
-      final token = prefs.getString('github_token') ?? '';
+      // 1. OTONOM ADIM: .github/workflows/build_apk.yml VAR MI KONTROL ET, YOKSA OLUŞTUR
+      final workflowUrl = Uri.parse('https://api.github.com/repos/$owner/$repo/contents/.github/workflows/build_apk.yml');
+      final workflowCheck = await http.get(
+        workflowUrl,
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/vnd.github.v3+json'},
+      );
 
-      if (owner.isEmpty || repo.isEmpty || token.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Lütfen Ayarlar sayfasında tüm GitHub bilgilerini girin!'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
+      if (workflowCheck.statusCode == 404) {
+        // Workflow yoksa otonom olarak oluşturuyoruz
+        final workflowBase64 = base64Encode(utf8.encode(_defaultWorkflowYaml));
+        await http.put(
+          workflowUrl,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'message': 'Ares Builder: Otomatik Workflow Oluşturuldu',
+            'content': workflowBase64,
+          }),
+        );
       }
 
-      final url = Uri.parse('https://api.github.com/repos/$owner/$repo/dispatches');
-      final response = await http.post(
-        url,
+      // 2. OTONOM ADIM: lib/main.dart DOSYASINI GÜNCELLE VEYA OLUŞTUR
+      final mainDartUrl = Uri.parse('https://api.github.com/repos/$owner/$repo/contents/lib/main.dart');
+      final mainCheck = await http.get(
+        mainDartUrl,
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/vnd.github.v3+json'},
+      );
+
+      String? sha;
+      if (mainCheck.statusCode == 200) {
+        final body = jsonDecode(mainCheck.body);
+        sha = body['sha'];
+      }
+
+      final codeBase64 = base64Encode(utf8.encode(codeText));
+      final putMainResponse = await http.put(
+        mainDartUrl,
         headers: {
           'Authorization': 'Bearer $token',
           'Accept': 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'event_type': 'build-apk'}),
+        body: jsonEncode({
+          'message': 'Ares Builder: Otomatik Kod Güncellemesi',
+          'content': codeBase64,
+          if (sha != null) 'sha': sha,
+        }),
       );
 
-      if (mounted) {
-        if (response.statusCode == 204) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('APK Derleme Başlatıldı! GitHub Actions sekmesinden takip edebilirsiniz.'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else {
+      if (putMainResponse.statusCode == 200 || putMainResponse.statusCode == 201) {
+        // 3. OTONOM ADIM: DERLEMEYİ TETİKLE
+        final dispatchUrl = Uri.parse('https://api.github.com/repos/$owner/$repo/dispatches');
+        final dispatchResponse = await http.post(
+          dispatchUrl,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({'event_type': 'build-apk'}),
+        );
+
+        if (mounted) {
+          if (dispatchResponse.statusCode == 204) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Her şey otomatik hazırlandı ve APK derlemesi başlatıldı!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Derleme tetikleme hatası: ${dispatchResponse.statusCode}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } else {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Hata: ${response.statusCode} - ${response.body}'),
+              content: Text('Kod aktarım hatası: ${putMainResponse.statusCode}'),
               backgroundColor: Colors.red,
             ),
           );
@@ -159,7 +266,6 @@ class _HomeScreenState extends State<HomeScreen> {
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
-            // 1. TAM ARKA PLAN GÖRSELİ
             Positioned.fill(
               child: Image.asset(
                 'assets/ares_bg.png',
@@ -167,8 +273,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 errorBuilder: (context, error, stackTrace) => Container(color: Colors.black87),
               ),
             ),
-
-            // 2. SAĞ ÜST: AYARLAR (Çark İkon Alanı)
             Positioned(
               top: screenSize.height * 0.04,
               right: screenSize.width * 0.02,
@@ -186,8 +290,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(color: Colors.transparent),
               ),
             ),
-
-            // 3. KOD YAZMA ALANI (Siyah Kutunun İçine Tam Oturtulmuş Hali)
             Positioned(
               top: screenSize.height * 0.54,
               left: screenSize.width * 0.25,
@@ -223,8 +325,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
-            // 4. SOL ALT: DOSYA / KOD YÜKLE BUTON ALANI
             Positioned(
               bottom: screenSize.height * 0.04,
               left: screenSize.width * 0.04,
@@ -239,8 +339,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(color: Colors.transparent),
               ),
             ),
-
-            // 5. SAĞ ALT: APK OLUŞTUR & DERLE BUTON ALANI
             Positioned(
               bottom: screenSize.height * 0.04,
               right: screenSize.width * 0.04,
