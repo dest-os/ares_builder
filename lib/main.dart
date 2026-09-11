@@ -42,7 +42,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _codeController = TextEditingController();
 
-  // Telefon Hafızasından Dosya Seçme İşlemi
   Future<void> _pickFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -72,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // GitHub Actions APK Derleme Tetikleme
   Future<void> _startBuild() async {
     if (_codeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -131,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Hata koda göre: ${response.statusCode} - ${response.body}'),
+              content: Text('Hata: ${response.statusCode} - ${response.body}'),
               backgroundColor: Colors.red,
             ),
           );
@@ -153,91 +151,112 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          // 1. TAM ARKA PLAN GÖRSELİ
-          Positioned.fill(
-            child: Image.asset(
-              'assets/ares_bg.png',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(color: Colors.black87),
+    return GestureDetector(
+      // Ekranın boş bir yerine dokunulduğunda klavyeyi kapatır
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            // 1. TAM ARKA PLAN GÖRSELİ
+            Positioned.fill(
+              child: Image.asset(
+                'assets/ares_bg.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(color: Colors.black87),
+              ),
             ),
-          ),
 
-          // 2. SAĞ ÜST: AYARLAR (Çark İkon Alanı)
-          Positioned(
-            top: screenSize.height * 0.05,
-            right: screenSize.width * 0.03,
-            width: screenSize.width * 0.12,
-            height: screenSize.height * 0.22,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                );
-              },
-              child: Container(color: Colors.transparent),
+            // 2. SAĞ ÜST: AYARLAR (Çark İkon Alanı)
+            Positioned(
+              top: screenSize.height * 0.04,
+              right: screenSize.width * 0.02,
+              width: screenSize.width * 0.15,
+              height: screenSize.height * 0.25,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                },
+                child: Container(color: Colors.transparent),
+              ),
             ),
-          ),
 
-          // 3. TAM GÖZÜN ALTINDAKİ "KOD YAZMA ALANI" (Şeffaf Metin Kutusu)
-          Positioned(
-            top: screenSize.height * 0.52,
-            left: screenSize.width * 0.22,
-            width: screenSize.width * 0.56,
-            height: screenSize.height * 0.22,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              color: Colors.transparent,
-              child: TextField(
-                controller: _codeController,
-                maxLines: null,
-                expands: true,
-                keyboardType: TextInputType.multiline,
-                style: const TextStyle(
-                  color: Colors.cyanAccent,
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                ),
-                decoration: const InputDecoration(
-                  hintText: "Kod bloğunu buraya dokunup yapıştırın...",
-                  hintStyle: TextStyle(color: Colors.white30, fontSize: 11),
-                  border: InputBorder.none,
+            // 3. TAM GÖZÜN ALTINDAKİ "KOD YAZMA ALANI" (Şeffaf Metin Kutusu)
+            Positioned(
+              top: screenSize.height * 0.48,
+              left: screenSize.width * 0.18,
+              width: screenSize.width * 0.64,
+              height: screenSize.height * 0.28,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                color: Colors.transparent,
+                child: TextField(
+                  controller: _codeController,
+                  maxLines: null,
+                  expands: true,
+                  enableInteractiveSelection: true, // Kopyala/Yapıştır menüsünü aktif eder
+                  keyboardType: TextInputType.multiline,
+                  style: const TextStyle(
+                    color: Colors.cyanAccent,
+                    fontFamily: 'monospace',
+                    fontSize: 13,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: "Kod bloğuna basılı tutup yapıştırın...",
+                    hintStyle: TextStyle(color: Colors.white30, fontSize: 12),
+                    border: InputBorder.none,
+                  ),
+                  // Android / iOS varsayılan yapıştırma menüsünü garanti eder
+                  contextMenuBuilder: (context, editableTextState) {
+                    return AdaptiveTextSelectionToolbar.buttonItems(
+                      anchors: editableTextState.contextMenuAnchors,
+                      buttonItems: editableTextState.contextMenuButtonItems,
+                    );
+                  },
                 ),
               ),
             ),
-          ),
 
-          // 4. SOL ALT: DOSYA / KOD YÜKLE BUTON ALANI
-          Positioned(
-            bottom: screenSize.height * 0.06,
-            left: screenSize.width * 0.05,
-            width: screenSize.width * 0.42,
-            height: screenSize.height * 0.18,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _pickFile,
-              child: Container(color: Colors.transparent),
+            // 4. SOL ALT: DOSYA / KOD YÜKLE BUTON ALANI
+            Positioned(
+              bottom: screenSize.height * 0.04,
+              left: screenSize.width * 0.04,
+              width: screenSize.width * 0.42,
+              height: screenSize.height * 0.20,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _pickFile();
+                },
+                child: Container(color: Colors.transparent),
+              ),
             ),
-          ),
 
-          // 5. SAĞ ALT: APK OLUŞTUR & DERLE BUTON ALANI
-          Positioned(
-            bottom: screenSize.height * 0.06,
-            right: screenSize.width * 0.05,
-            width: screenSize.width * 0.42,
-            height: screenSize.height * 0.18,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _startBuild,
-              child: Container(color: Colors.transparent),
+            // 5. SAĞ ALT: APK OLUŞTUR & DERLE BUTON ALANI
+            Positioned(
+              bottom: screenSize.height * 0.04,
+              right: screenSize.width * 0.04,
+              width: screenSize.width * 0.42,
+              height: screenSize.height * 0.20,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                  _startBuild();
+                },
+                child: Container(color: Colors.transparent),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
