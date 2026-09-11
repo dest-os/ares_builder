@@ -1,6 +1,7 @@
 name: ares_builder
-description: "Ares Otonom APK Builder Uygulamasi"
+description: "Ares Builder Application"
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -19,7 +20,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
     - assets/ares_bg.png
-    - assets/ares_eye.png
     - assets/logo.png
