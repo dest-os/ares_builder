@@ -1,5 +1,5 @@
 name: ares_builder
-description: "A new Flutter project."
+description: "Ares Builder - Otomatik Derleme ve Yönetim Uygulaması"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,17 +10,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  shared_preferences: ^2.2.2
-  file_picker: ^8.0.0
-  http: ^1.2.0
+  cupertino_icons: ^1.0.6
+  flutter_services_binding: ^1.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+
   assets:
-    - assets/ares_bg.png
+    - assets/images/ares_bg.png
+    - assets/images/eye_logo.png
