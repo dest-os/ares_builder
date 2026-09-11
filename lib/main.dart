@@ -101,7 +101,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // Arka Plan Görseli
+          // 1. KATMAN: Arka Plan Görseli
           Positioned.fill(
             child: Image.asset(
               'assets/ares_bg.png',
@@ -109,7 +109,14 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
             ),
           ),
 
-          // İçerik Katmanı
+          // 2. KATMAN: Görseldeki Sabit Yazıları Örtmek İçin Siyah Şeffaf Layer
+          Positioned.fill(
+            child: Container(
+              color: const Color(0xFF020B14).withOpacity(0.85),
+            ),
+          ),
+
+          // 3. KATMAN: Temiz Arayüz Bileşenleri
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -177,7 +184,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
                   const SizedBox(height: 12),
 
-                  // Orta Logo (assets/logo.png)
+                  // Orta Logo ve Başlıklar
                   Column(
                     children: [
                       Container(
@@ -203,7 +210,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        'Otonom APK Derleyici .......',
+                        'Otonom APK Derleyici',
                         style: TextStyle(
                           color: Color(0xFF00E5FF),
                           fontSize: 16,
@@ -230,7 +237,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     height: 120,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.75),
+                      color: Colors.black.withOpacity(0.8),
                       border: Border.all(color: const Color(0xFF00E5FF), width: 1.5),
                       borderRadius: BorderRadius.circular(12),
                     ),
