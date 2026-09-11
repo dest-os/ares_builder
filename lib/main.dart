@@ -41,14 +41,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _codeController = TextEditingController();
-  final FocusNode _codeFocusNode = FocusNode();
-
-  @override
-  void dispose() {
-    _codeController.dispose();
-    _codeFocusNode.dispose();
-    super.dispose();
-  }
 
   // Telefon Hafızasından Dosya Seçme İşlemi
   Future<void> _pickFile() async {
@@ -159,11 +151,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
-      resizeToAvoidBottomInset: true, // Klavyenin ekranı kapatmasını önler
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // 1. Arka plan resmi
+          // 1. TAM ARKA PLAN GÖRSELİ
           Positioned.fill(
             child: Image.asset(
               'assets/ares_bg.png',
@@ -172,116 +166,75 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // 2. KOD YAZMA VE İŞLEM ALANI (Dokunma engelleri kaldırıldı)
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Üst Bar: Başlık ve Ayarlar Butonu
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "ARES BUILDER",
-                        style: TextStyle(
-                          color: Colors.cyanAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.settings, color: Colors.white, size: 28),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
+          // 2. SAĞ ÜST: AYARLAR (Çark İkon Alanı)
+          Positioned(
+            top: screenSize.height * 0.05,
+            right: screenSize.width * 0.03,
+            width: screenSize.width * 0.12,
+            height: screenSize.height * 0.22,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              },
+              child: Container(color: Colors.transparent),
+            ),
+          ),
 
-                  // Orta Alan: Kod Yazma / Yapıştırma Kutusu
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.85),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.cyanAccent.withOpacity(0.6), width: 1.5),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "PROJE KODLARI (REPO BLOKU)",
-                                style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.cyan.shade800,
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                ),
-                                onPressed: _pickFile,
-                                icon: const Icon(Icons.folder_open, size: 16, color: Colors.white),
-                                label: const Text("Dosya Seç", style: TextStyle(color: Colors.white, fontSize: 12)),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                FocusScope.of(context).requestFocus(_codeFocusNode);
-                              },
-                              child: TextField(
-                                controller: _codeController,
-                                focusNode: _codeFocusNode,
-                                maxLines: null,
-                                expands: true,
-                                enabled: true,
-                                readOnly: false,
-                                keyboardType: TextInputType.multiline,
-                                style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 13),
-                                decoration: const InputDecoration(
-                                  hintText: "Kod bloğunu buraya dokunup yapıştırın...",
-                                  hintStyle: TextStyle(color: Colors.white38),
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Alt Bar: Derle Butonu
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green.shade700,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                      ),
-                      onPressed: _startBuild,
-                      icon: const Icon(Icons.build, color: Colors.white),
-                      label: const Text(
-                        'DERLE VE APK YAP',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ],
+          // 3. TAM GÖZÜN ALTINDAKİ "KOD YAZMA ALANI" (Şeffaf Metin Kutusu)
+          Positioned(
+            top: screenSize.height * 0.52,
+            left: screenSize.width * 0.22,
+            width: screenSize.width * 0.56,
+            height: screenSize.height * 0.22,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              color: Colors.transparent,
+              child: TextField(
+                controller: _codeController,
+                maxLines: null,
+                expands: true,
+                keyboardType: TextInputType.multiline,
+                style: const TextStyle(
+                  color: Colors.cyanAccent,
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Kod bloğunu buraya dokunup yapıştırın...",
+                  hintStyle: TextStyle(color: Colors.white30, fontSize: 11),
+                  border: InputBorder.none,
+                ),
               ),
+            ),
+          ),
+
+          // 4. SOL ALT: DOSYA / KOD YÜKLE BUTON ALANI
+          Positioned(
+            bottom: screenSize.height * 0.06,
+            left: screenSize.width * 0.05,
+            width: screenSize.width * 0.42,
+            height: screenSize.height * 0.18,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _pickFile,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
+          // 5. SAĞ ALT: APK OLUŞTUR & DERLE BUTON ALANI
+          Positioned(
+            bottom: screenSize.height * 0.06,
+            right: screenSize.width * 0.05,
+            width: screenSize.width * 0.42,
+            height: screenSize.height * 0.18,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _startBuild,
+              child: Container(color: Colors.transparent),
             ),
           ),
         ],
