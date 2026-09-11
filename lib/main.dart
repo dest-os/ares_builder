@@ -152,7 +152,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final screenSize = MediaQuery.of(context).size;
 
     return GestureDetector(
-      // Ekranın boş bir yerine dokunulduğunda klavyeyi kapatır
       onTap: () {
         FocusScope.of(context).unfocus();
       },
@@ -188,32 +187,33 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // 3. TAM GÖZÜN ALTINDAKİ "KOD YAZMA ALANI" (Şeffaf Metin Kutusu)
+            // 3. KOD YAZMA ALANI (Siyah Kutunun İçine Tam Oturtulmuş Hali)
             Positioned(
-              top: screenSize.height * 0.48,
-              left: screenSize.width * 0.18,
-              width: screenSize.width * 0.64,
-              height: screenSize.height * 0.28,
+              top: screenSize.height * 0.54,
+              left: screenSize.width * 0.25,
+              width: screenSize.width * 0.50,
+              height: screenSize.height * 0.18,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 color: Colors.transparent,
                 child: TextField(
                   controller: _codeController,
                   maxLines: null,
                   expands: true,
-                  enableInteractiveSelection: true, // Kopyala/Yapıştır menüsünü aktif eder
+                  enableInteractiveSelection: true,
                   keyboardType: TextInputType.multiline,
                   style: const TextStyle(
                     color: Colors.cyanAccent,
                     fontFamily: 'monospace',
-                    fontSize: 13,
+                    fontSize: 11,
                   ),
                   decoration: const InputDecoration(
                     hintText: "Kod bloğuna basılı tutup yapıştırın...",
-                    hintStyle: TextStyle(color: Colors.white30, fontSize: 12),
+                    hintStyle: TextStyle(color: Colors.white30, fontSize: 10),
                     border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
                   ),
-                  // Android / iOS varsayılan yapıştırma menüsünü garanti eder
                   contextMenuBuilder: (context, editableTextState) {
                     return AdaptiveTextSelectionToolbar.buttonItems(
                       anchors: editableTextState.contextMenuAnchors,
