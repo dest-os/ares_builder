@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/github_service.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _codeController = TextEditingController();
   String _selectedFileName = '';
+  bool _isLoading = false;
 
   Future<void> _pickFiles() async {
     try {
@@ -40,9 +43,123 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Yapıştırılan metni parçalayıp haritalandırır
+  Map<String, String> _parseCodeText(String rawText) {
+    final Map<String, String> files = {};
+    final lines = rawText.split('\n');
+
+    String? currentFileName;
+    StringBuffer currentContent = StringBuffer();
+
+    for (var line in lines) {
+      if (line.trim().startsWith('# FILE:') || line.trim().startsWith('// FILE:')) {
+        if (currentFileName != null) {
+          files[currentFileName] = currentContent.toString().trim();
+          currentContent.clear();
+        }
+        currentFileName = line.replaceAll('# FILE:', '').replaceAll('// FILE:', '').trim();
+      } else {
+        if (currentFileName != null) {
+          currentContent.writeln(line);
+        }
+      }
+    }
+
+    if (currentFileName != null && currentContent.isNotEmpty) {
+      files[currentFileName] = currentContent.toString().trim();
+    }
+
+    return files;
+  }
+
+  /// GitHub'a Gönderme ve Derleme Mantığı
+  Future<void> _startBuildProcess() async {
+    FocusScope.of(context).unfocus();
+
+    final rawText = _codeController.text.trim();
+    if (rawText.isEmpty && _selectedFileName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lütfen kod yazın veya bir dosya seçin.')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('github_token') ?? '';
+      final owner = prefs.getString('github_username') ?? '';
+      
+      // Metnin içinden REPO_NAME oku veya varsayılan depoyu kullan
+      String repo = 'ares_launcher';
+      if (rawText.contains('REPO_NAME:')) {
+        final repoLine = rawText.split('\n').firstWhere((l) => l.contains('REPO_NAME:'));
+        repo = repoLine.replaceAll('REPO_NAME:', '').trim();
+      }
+
+      if (token.isEmpty || owner.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Hata: Ayarlar ekranından GitHub Token ve Kullanıcı Adını kaydedin.')),
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final githubService = GitHubService(token: token, owner: owner, repo: repo);
+
+      // Metni parçala
+      final filesToSend = _parseCodeText(rawText);
+
+      if (filesToSend.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Hata: Metin içinde geçerli dosya başlığı (# FILE: path) bulunamadı.')),
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$repo deposuna ${filesToSend.length} dosya gönderiliyor...')),
+        );
+      }
+
+      // Dosyaları GitHub'a Yükle
+      final success = await githubService.pushMultipleFiles(
+        filesToSend,
+        'Auto build commit by Ares Builder',
+      );
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Başarılı! Dosyalar GitHub\'a aktarıldı, derleme başladı.')),
+          );
+          _codeController.clear();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Hata: Dosyalar aktarılamadı. Token izinlerini ve ağ bağlantısını kontrol edin.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('İşlem hatası: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Ekrana tıklanınca klavyeyi kapatmayı sağlayan ana dokunma algılayıcı
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -66,12 +183,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // 2. KATMAN: Şeffaf KOD YAPIŞTIRMA ALANI (Yeni boş kutuya milimetrik oturtuldu)
+                  // 2. KATMAN: Şeffaf KOD YAPIŞTIRMA ALANI
                   Positioned(
-                    left: width * 0.23,  // Yatay başlangıç
-                    top: height * 0.53,   // Dikey başlangıç (Boş kutunun üstü)
-                    width: width * 0.54,  // Kutunun genişliği
-                    height: height * 0.15, // Kutunun yüksekliği (3-4 satır kod sığar)
+                    left: width * 0.23,
+                    top: height * 0.53,
+                    width: width * 0.54,
+                    height: height * 0.15,
                     child: Center(
                       child: TextField(
                         controller: _codeController,
@@ -80,13 +197,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         textAlign: TextAlign.center,
                         textAlignVertical: TextAlignVertical.center,
                         style: const TextStyle(
-                          color: Color(0xFF00E5FF), // Neon Mavi
+                          color: Color(0xFF00E5FF),
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                         decoration: InputDecoration(
-                          // Kutunun içinde hiçbir ipucu yazısı görünmeyecek, 
-                          // çünkü resminizdeki "KOD YAZMA ALANI" üstte duruyor.
                           hintText: _selectedFileName.isEmpty ? "" : "Dosya: $_selectedFileName",
                           hintStyle: const TextStyle(
                             color: Color(0xFF00E5FF),
@@ -99,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // 3. KATMAN: Dosya / Kod Yükle Butonu (Tıklama Alanı)
+                  // 3. KATMAN: Dosya / Kod Yükle Butonu
                   Positioned(
                     left: width * 0.06,
                     top: height * 0.75,
@@ -112,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // 4. KATMAN: APK Oluştur & Derle Butonu (Tıklama Alanı)
+                  // 4. KATMAN: APK Oluştur & Derle Butonu
                   Positioned(
                     left: width * 0.52,
                     top: height * 0.75,
@@ -120,25 +235,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: height * 0.16,
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTap: () {
-                        // Klavyeyi kapat
-                        FocusScope.of(context).unfocus();
-
-                        if (_codeController.text.isEmpty && _selectedFileName.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Lütfen kod yazın veya bir dosya seçin.')),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Ares Builder derleme işlemini başlattı...')),
-                          );
-                        }
-                      },
-                      child: Container(color: Colors.transparent),
+                      onTap: _isLoading ? null : _startBuildProcess,
+                      child: Container(
+                        color: Colors.transparent,
+                        child: _isLoading
+                            ? const Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF00E5FF),
+                                ),
+                              )
+                            : null,
+                      ),
                     ),
                   ),
 
-                  // 5. KATMAN: Sağ Üstteki Ayarlar Simgesi (Tıklama Alanı)
+                  // 5. KATMAN: Sağ Üstteki Ayarlar Simgesi
                   Positioned(
                     left: width * 0.87,
                     top: height * 0.06,
