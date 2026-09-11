@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'services/github_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Uygulamayı sadece yatay moda kilitliyoruz
+  // Tam ekran ve sadece yatay moda kilitliyoruz
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
@@ -22,7 +22,9 @@ class AresBuilderApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Ares Builder',
-      theme: ThemeData.dark(),
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF121212),
+      ),
       home: const HomeScreen(),
     );
   }
@@ -36,53 +38,63 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // Arka plan tam ekran oturuyor
+          // Arka plan tam ekran oturur, hiçbir başlık çubuğu olmaz
           Positioned.fill(
             child: Image.asset(
               'assets/ares_bg.png',
               fit: BoxFit.cover,
             ),
           ),
-          // Sağ üst köşedeki Ayarlar Butonu
+
+          // 1. SAĞ ÜST: Ayarlar (Küp/Çark İkonu Bölgesi)
           Positioned(
-            top: 16,
-            right: 16,
-            child: SafeArea(
-              child: IconButton(
-                icon: const Icon(Icons.settings, color: Colors.cyan, size: 32),
-                tooltip: 'Ayarlar',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                  );
-                },
-              ),
+            top: 20,
+            right: 20,
+            width: 70,
+            height: 70,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              },
+              child: Container(color: Colors.transparent),
             ),
           ),
-          // Görsel üzerindeki butona basma alanı
+
+          // 2. SOL ALT: Dosya / Kod Yükle Butonu
           Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Derleme işlemi başlatılıyor...')),
-                  );
-                },
-                icon: const Icon(Icons.build),
-                label: const Text('APK OLUŞTUR & DERLE'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyan.shade900,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
+            bottom: 25,
+            left: 40,
+            width: 320,
+            height: 60,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Dosya / Kod Yükleme Alanı Açılıyor...')),
+                );
+              },
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
+          // 3. SAĞ ALT: APK Oluştur & Derle Butonu
+          Positioned(
+            bottom: 25,
+            right: 40,
+            width: 320,
+            height: 60,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('APK Derleme İşlemi Başlatıldı!')),
+                );
+              },
+              child: Container(color: Colors.transparent),
             ),
           ),
         ],
@@ -139,60 +151,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sistem Ayarları'),
-        centerTitle: true,
+        title: const Text('Ayarlar & API Anahtarları'),
+        backgroundColor: Colors.black,
+        elevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text('GitHub Kullanıcı Adı (Owner)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
               TextField(
                 controller: _ownerController,
                 decoration: const InputDecoration(
-                  labelText: 'GitHub Kullanıcı Adı (Owner)',
+                  hintText: 'Örn: ibrahim-halil',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              const Text('Depo Adı (Repo)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
               TextField(
                 controller: _repoController,
                 decoration: const InputDecoration(
-                  labelText: 'Depo Adı (Repo)',
                   hintText: 'Örn: ares_builder',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.folder),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              const Text('GitHub Personal Access Token (PAT)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
               TextField(
                 controller: _tokenController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'GitHub Personal Access Token',
+                  hintText: 'ghp_xxxxxxxxxxxx',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.vpn_key),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+
+              const Text('Gemini API Key', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 8),
               TextField(
                 controller: _geminiKeyController,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: 'Gemini API Key',
+                  hintText: 'AlzaSyxxxxxxxxxxxx',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.auto_awesome),
                 ),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: _saveSettings,
-                icon: const Icon(Icons.save),
-                label: const Text('KAYDET VE DÖN'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _saveSettings,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: const Text('Kaydet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
