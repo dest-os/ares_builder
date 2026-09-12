@@ -12,26 +12,33 @@ class CodeInputBox extends StatefulWidget {
 class _CodeInputBoxState extends State<CodeInputBox> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
+    final size = MediaQuery.of(context).size;
+
+    return Positioned(
+      top: size.height * 0.54,   // Arka plandaki siyah kutunun dikey konumu
+      left: size.width * 0.22,  // Arka plandaki siyah kutunun yatay konumu
+      width: size.width * 0.56, // Kutu genişliği
+      height: size.height * 0.16, // Kutu yüksekliği
+      child: Container(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: TextField(
-        controller: globalCodeController,
-        maxLines: null,
-        expands: true,
-        keyboardType: TextInputType.multiline,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          fontFamily: 'monospace',
-        ),
-        decoration: const InputDecoration(
-          hintText: 'Komut veya Kod Yazın...',
-          hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
-          border: InputBorder.none,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: TextField(
+          controller: globalCodeController,
+          maxLines: null,
+          expands: true,
+          textAlignVertical: TextAlignVertical.top,
+          style: const TextStyle(
+            color: Color(0xFF00E5FF),
+            fontSize: 13,
+            fontFamily: 'monospace',
+          ),
+          decoration: const InputDecoration(
+            hintText: 'Komut veya Kod Yazın...',
+            hintStyle: TextStyle(color: Colors.white38, fontSize: 12),
+            border: InputBorder.none,
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
         ),
       ),
     );
