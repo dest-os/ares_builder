@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+final TextEditingController globalCodeController = TextEditingController();
+
 class CodeInputBox extends StatefulWidget {
   const CodeInputBox({super.key});
 
@@ -8,8 +10,6 @@ class CodeInputBox extends StatefulWidget {
 }
 
 class _CodeInputBoxState extends State<CodeInputBox> {
-  final TextEditingController _codeController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -19,7 +19,7 @@ class _CodeInputBoxState extends State<CodeInputBox> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: TextField(
-        controller: _codeController,
+        controller: globalCodeController,
         maxLines: null,
         expands: true,
         keyboardType: TextInputType.multiline,
