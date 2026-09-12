@@ -61,59 +61,25 @@ class ActionButtons extends StatelessWidget {
 
     return Positioned(
       bottom: size.height * 0.05,
-      left: size.width * 0.11,
-      width: size.width * 0.78,
-      height: size.height * 0.12,
+      left: size.width * 0.08,
+      width: size.width * 0.84,
+      height: size.height * 0.16,
       child: Row(
         children: [
-          // Sol Buton: Dosya / Kod Yükle
           Expanded(
             child: GestureDetector(
               onTap: () => _pickAndLoadFile(context),
               child: Container(
                 color: Colors.transparent,
-                alignment: Alignment.center,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.file_upload_outlined, color: Color(0xFF00E5FF), size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Dosya / Kod Yükle',
-                      style: TextStyle(
-                        color: Color(0xFF00E5FF),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
-          const SizedBox(width: 20),
-          // Sağ Buton: APK Oluştur & Derle
+          const SizedBox(width: 30),
           Expanded(
             child: GestureDetector(
               onTap: () => _startBuildProcess(context),
               child: Container(
                 color: Colors.transparent,
-                alignment: Alignment.center,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.build_outlined, color: Color(0xFF00E5FF), size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'APK Oluştur & Derle',
-                      style: TextStyle(
-                        color: Color(0xFF00E5FF),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
