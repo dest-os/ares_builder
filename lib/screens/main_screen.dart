@@ -9,24 +9,23 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF020B14),
-      resizeToAvoidBottomInset: false, // Klavyenin ekranı sıkıştırmasını engeller
+      resizeToAvoidBottomInset: false, // Klavyenin ekranı büzmesini engeller
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: SizedBox.expand(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Arka Plan Görseli - Ekranı uçtan uca kaplar
-              Image.asset(
+        child: Stack(
+          children: [
+            // 1. Arka Plan Görseli
+            Positioned.fill(
+              child: Image.asset(
                 'assets/images/ares_bg.png',
-                fit: BoxFit.fill, // Kenar boşluklarını sıfırlayıp tam doldurur
+                fit: BoxFit.cover,
               ),
-              // Kod Yazma Alanı Katmanı
-              const CodeInputBox(),
-              // Buton Katmanları
-              const ActionButtons(),
-            ],
-          ),
+            ),
+            // 2. Metin Giriş Alanı
+            const CodeInputBox(),
+            // 3. Alt Buton Alanları
+            const ActionButtons(),
+          ],
         ),
       ),
     );
