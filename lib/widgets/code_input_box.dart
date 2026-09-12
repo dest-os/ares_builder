@@ -1,46 +1,37 @@
 import 'package:flutter/material.dart';
 
-// Kod metnini diğer modüllerden erişilebilir tutmak için global controller
-final TextEditingController globalCodeController = TextEditingController();
-
-class CodeInputBox extends StatelessWidget {
+class CodeInputBox extends StatefulWidget {
   const CodeInputBox({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+  State<CodeInputBox> createState() => _CodeInputBoxState();
+}
 
-    return Positioned(
-      // Arka plandaki "KOD YAZMA ALANI" çerçevesine tam oturan konumlandırma
-      top: size.height * 0.58,
-      left: size.width * 0.11,
-      width: size.width * 0.78,
-      height: size.height * 0.23,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.transparent, // Arka plan görselini kapatmaması için şeffaf
-          borderRadius: BorderRadius.circular(8),
+class _CodeInputBoxState extends State<CodeInputBox> {
+  final TextEditingController _codeController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: TextField(
+        controller: _codeController,
+        maxLines: null,
+        expands: true,
+        keyboardType: TextInputType.multiline,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontFamily: 'monospace',
         ),
-        child: TextField(
-          controller: globalCodeController,
-          maxLines: null,
-          expands: true,
-          keyboardType: TextInputType.multiline,
-          style: const TextStyle(
-            color: Color(0xFF00E5FF),
-            fontFamily: 'monospace',
-            fontSize: 13,
-          ),
-          decoration: const InputDecoration(
-            hintText: 'Kod bloğuna basılı tutup yapıştırın...',
-            hintStyle: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-              fontFamily: 'monospace',
-            ),
-            border: InputBorder.none,
-          ),
+        decoration: const InputDecoration(
+          hintText: 'Komut veya Kod Yazın...',
+          hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
+          border: InputBorder.none,
         ),
       ),
     );
