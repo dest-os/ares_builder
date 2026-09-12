@@ -4,10 +4,25 @@ import 'screens/main_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Kenarlardaki siyah bantları kaldırır, navigasyon çubuğunu (alta alma tuşlarını) aktif tutar
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  // Sistem çubuklarını şeffaf yapar
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      navigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+    ),
+  );
+
+  // Sadece yatay moda kilitler
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ]);
+
   runApp(const AresBuilderApp());
 }
 
