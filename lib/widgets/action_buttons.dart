@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'code_input_box.dart';
+import 'package:ares_builder/widgets/code_input_box.dart';
 
 class ActionButtons extends StatelessWidget {
   const ActionButtons({super.key});
