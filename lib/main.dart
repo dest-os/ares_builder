@@ -5,14 +5,14 @@ import 'screens/main_screen.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Kenarlardaki siyah bantları kaldırır, navigasyon çubuğunu (alta alma tuşlarını) aktif tutar
+  // Kenarlardaki siyah bantları kaldırır, navigasyon çubuğunu aktif tutar
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
-  // Sistem çubuklarını şeffaf yapar
+  // Sistem çubuklarını şeffaf yapar (Parametre adları düzeltildi)
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      navigationBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
       systemNavigationBarDividerColor: Colors.transparent,
     ),
   );
