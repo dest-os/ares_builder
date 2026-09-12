@@ -1,67 +1,39 @@
 import 'package:flutter/material.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  final TextEditingController _githubTokenController = TextEditingController();
-  final TextEditingController _geminiApiKeyController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF020B14),
       appBar: AppBar(
-        title: const Text('Ayarlar & API Anahtarları'),
+        title: const Text('Ares Builder Ayarları'),
+        backgroundColor: const Color(0xFF020B14),
+        iconTheme: const IconThemeData(color: Color(0xFF00E5FF)),
+        titleTextStyle: const TextStyle(
+          color: Color(0xFF00E5FF),
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'GitHub Personal Access Token (PAT)',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _githubTokenController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                hintText: 'ghp_xxxxxxxxxxxx',
-                border: OutlineInputBorder(),
+              'Derleme ve GitHub Konfigürasyonları',
+              style: TextStyle(
+                color: Color(0xFF00E5FF),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             const Text(
-              'Gemini API Key',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _geminiApiKeyController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                hintText: 'AIzaSyxxxxxxxxxxxx',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ayarlar başarıyla kaydedildi.')),
-                );
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: const Color(0xFF0284C7),
-              ),
-              child: const Text('Kaydet', style: TextStyle(color: Colors.white)),
+              'Buradan APK derleme parametrelerini ve GitHub Secrets ayarlarınızı yönetebilirsiniz.',
+              style: TextStyle(color: Colors.white70, fontSize: 13),
             ),
           ],
         ),
