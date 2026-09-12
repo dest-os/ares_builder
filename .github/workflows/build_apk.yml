@@ -31,6 +31,9 @@ jobs:
       - name: Bağımlılıkları İndir
         run: flutter pub get
 
+      - name: Uygulama İkonunu Oluştur
+        run: flutter pub run flutter_launcher_icons
+
       - name: APK Derle (Release)
         run: flutter build apk --release
 
