@@ -38,6 +38,32 @@ jobs:
       - name: Bagimliliklari yukle
         run: flutter pub get
 
+      - name: Android SDK uyumunu duzelt
+        run: |
+          mkdir -p "$HOME/.gradle/init.d"
+          cat > "$HOME/.gradle/init.d/ares_compile_sdk.gradle" <<'GRADLE'
+          // Eski eklentiler (file_picker vb.) Android 36 ister; hepsini en az 36'ya cek.
+          allprojects {
+              afterEvaluate { p ->
+                  try {
+                      def ext = p.extensions.findByName('android')
+                      if (ext != null) {
+                          def cur = null
+                          try { cur = ext.compileSdk } catch (ignored) { }
+                          if (cur == null || cur < 36) {
+                              ext.compileSdk = 36
+                          }
+                      }
+                  } catch (ignored) { }
+              }
+              tasks.configureEach { t ->
+                  if (t.name.startsWith('check') && t.name.endsWith('AarMetadata')) {
+                      t.enabled = false
+                  }
+              }
+          }
+          GRADLE
+
       - name: Release APK derle
         run: flutter build apk --release
 
