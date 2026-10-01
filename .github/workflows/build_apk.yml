@@ -52,14 +52,10 @@ jobs:
                           try { cur = ext.compileSdk } catch (ignored) { }
                           if (cur == null || cur < 36) {
                               ext.compileSdk = 36
+                              println "ARES: ${p.name} compileSdk ${cur} -> 36"
                           }
                       }
                   } catch (ignored) { }
-              }
-              tasks.configureEach { t ->
-                  if (t.name.startsWith('check') && t.name.endsWith('AarMetadata')) {
-                      t.enabled = false
-                  }
               }
           }
           GRADLE
