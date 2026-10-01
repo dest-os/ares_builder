@@ -1,0 +1,50 @@
+name: Ares Builder - APK Derleme
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Java 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '17'
+
+      - name: Flutter kur
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Android klasorunu hazirla
+        run: |
+          NAME=$(grep -m1 '^name:' pubspec.yaml | sed 's/name:[[:space:]]*//' | tr -d '\r"')
+          flutter create --platforms=android --org com.aresbuilder --project-name "$NAME" .
+          if [ -f android_overlay/AndroidManifest.xml ]; then
+            cp android_overlay/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          fi
+
+      - name: Bagimliliklari yukle
+        run: flutter pub get
+
+      - name: Release APK derle
+        run: flutter build apk --release
+
+      - name: APK yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: AresBuilder-Release-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
